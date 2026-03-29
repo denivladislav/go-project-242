@@ -1,13 +1,23 @@
+.PHONY: build
 build:
 	go build -o bin/hexlet-path-size ./cmd/hexlet-path-size
 
+.PHONY: run
 run:
-	bin/hexlet-path-size
+	bin/hexlet-path-size $(ARGS)
 
-GOLANGCI_LINT := golangci-lint run -c .golangci.yml
+GOLANGCI_LINT = golangci-lint
+GOLANGCI_CONFIG_PATH = .golangci.yml
 
-lint: 
-	$(GOLANGCI_LINT)
+.PHONY: lint
+lint:
+	$(GOLANGCI_LINT) run -c $(GOLANGCI_CONFIG_PATH) $(ARGS)
 
-lintfix:
-	$(GOLANGCI_LINT) --fix
+.PHONY: fmt
+fmt:
+	$(GOLANGCI_LINT) fmt -c $(GOLANGCI_CONFIG_PATH) 
+
+.PHONY: lintfix
+lint-fix:
+	make fmt
+	make lint ARGS=--fix

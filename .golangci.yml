@@ -23,5 +23,4 @@ formatters:
   enable:
     - goimports
     - gofumpt
-    - gci
     - golines
