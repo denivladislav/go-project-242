@@ -24,6 +24,10 @@ func getDirSize(path string) (int64, error) {
 	return size, nil
 }
 
+func fmtPathSize(size int64) string {
+	return fmt.Sprintf("%dB", size)
+}
+
 func GetPathSize(path string) (string, error) {
 	entry, err := os.Lstat(path)
 	if err != nil {
@@ -36,8 +40,8 @@ func GetPathSize(path string) (string, error) {
 			return "", err
 		}
 
-		return fmt.Sprintf("%dB", size), nil
+		return fmtPathSize(size), nil
 	}
 
-	return fmt.Sprintf("%dB", entry.Size()), nil
+	return fmtPathSize(entry.Size()), nil
 }

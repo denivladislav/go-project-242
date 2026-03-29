@@ -21,3 +21,7 @@ fmt:
 lint-fix:
 	make fmt
 	make lint ARGS=--fix
+
+.PHONY: test
+test:
+	go test
