@@ -35,18 +35,18 @@ func humanFormat(size float64, unit string) string {
 
 func FormatSize(size int64, human bool) (string, error) {
 	if size < 0 {
-		return "", fmt.Errorf("error: size cannot be < 0")
+		return "", fmt.Errorf("size cannot be < 0")
 	}
 
-	if human {
-		convertedSize, unit := convertSize(size)
-
-		if unit == units[0] {
-			return byteFormat(size), nil
-		}
-
-		return humanFormat(convertedSize, unit), nil
+	if !human {
+		return byteFormat(size), nil
 	}
 
-	return byteFormat(size), nil
+	convertedSize, unit := convertSize(size)
+
+	if unit == units[0] {
+		return byteFormat(size), nil
+	}
+
+	return humanFormat(convertedSize, unit), nil
 }

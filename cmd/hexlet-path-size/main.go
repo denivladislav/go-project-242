@@ -17,8 +17,16 @@ var humanFlag = &cli.BoolFlag{
 	Aliases: []string{"H"},
 }
 
+var allFlag = &cli.BoolFlag{
+	Name:    "all",
+	Value:   false,
+	Usage:   "include hidden files and directories",
+	Aliases: []string{"a"},
+}
+
 var cmdFlags = []cli.Flag{
 	humanFlag,
+	allFlag,
 }
 
 func main() {
@@ -33,8 +41,12 @@ func main() {
 				return fmt.Errorf("error: path is required")
 			}
 
-			human := cmd.Bool(humanFlag.Name)
-			size, err := pathsize.GetPathSize(path, human)
+			config := pathsize.Config{
+				Human: cmd.Bool(humanFlag.Name),
+				All:   cmd.Bool(allFlag.Name),
+			}
+
+			size, err := pathsize.GetPathSize(path, config)
 			if err != nil {
 				return fmt.Errorf("error: %w", err)
 			}

@@ -9,10 +9,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var byteConfig = Config{
+	Human: false,
+	All:   false,
+}
+
 func TestUnreachablePath(t *testing.T) {
 	unreachablePath := "./unreachable"
 
-	result, err := GetPathSize(unreachablePath, false)
+	result, err := GetPathSize(unreachablePath, byteConfig)
 
 	const msg = `GetPathSize should return "" and err for unreachable path`
 	require.Error(t, err, msg)
@@ -25,7 +30,7 @@ func TestEmptyFile(t *testing.T) {
 	want, err := formatsize.FormatSize(0, false)
 	require.NoError(t, err)
 
-	result, err := GetPathSize(fixturePath, false)
+	result, err := GetPathSize(fixturePath, byteConfig)
 	require.NoError(t, err)
 
 	require.Equal(t, want, result)
@@ -40,7 +45,7 @@ func TestFile(t *testing.T) {
 	want, err := formatsize.FormatSize(entry.Size(), false)
 	require.NoError(t, err)
 
-	result, err := GetPathSize(fixturePath, false)
+	result, err := GetPathSize(fixturePath, byteConfig)
 
 	require.NoError(t, err)
 	require.Equal(t, want, result)
@@ -58,7 +63,30 @@ func TestFolder(t *testing.T) {
 	want, err := formatsize.FormatSize(entry1.Size()+entry2.Size(), false)
 	require.NoError(t, err)
 
-	result, err := GetPathSize(fixturePath, false)
+	result, err := GetPathSize(fixturePath, byteConfig)
+	require.NoError(t, err)
+
+	require.Equal(t, want, result)
+}
+
+func TestHidden(t *testing.T) {
+	fixturePath := "../testData/testFolder/.testFolderInner/.hiddenFile.txt"
+
+	entry, err := os.Lstat(fixturePath)
+	require.NoError(t, err)
+
+	want, err := formatsize.FormatSize(entry.Size(), false)
+	require.NoError(t, err)
+
+	// Checking file is not seen without --all flag
+	_, err = GetPathSize(fixturePath, byteConfig)
+	require.Error(t, err)
+
+	// Checking file with --all flag
+	result, err := GetPathSize(fixturePath, Config{
+		Human: true,
+		All:   true,
+	})
 	require.NoError(t, err)
 
 	require.Equal(t, want, result)

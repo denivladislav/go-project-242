@@ -2,10 +2,21 @@ package pathsize
 
 import (
 	"code/formatsize"
+	"fmt"
 	"os"
+	"strings"
 )
 
-func getDirSize(path string) (int64, error) {
+type Config struct {
+	Human bool
+	All   bool
+}
+
+func isHidden(name string) bool {
+	return strings.HasPrefix(name, ".")
+}
+
+func getDirSize(path string, all bool) (int64, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return 0, err
@@ -18,6 +29,10 @@ func getDirSize(path string) (int64, error) {
 			return 0, err
 		}
 
+		if !all && isHidden(entry.Name()) {
+			continue
+		}
+
 		// TODO: implement recursive check
 		if !entryInfo.IsDir() {
 			size += entryInfo.Size()
@@ -27,20 +42,28 @@ func getDirSize(path string) (int64, error) {
 	return size, nil
 }
 
-func GetPathSize(path string, human bool) (string, error) {
+func GetPathSize(path string, config Config) (string, error) {
 	entry, err := os.Lstat(path)
 	if err != nil {
 		return "", err
 	}
 
+	if !config.All && isHidden(entry.Name()) {
+		return "", fmt.Errorf("no visible file or dir with path %s", path)
+	}
+
+	var size int64
+
 	if entry.IsDir() {
-		size, err := getDirSize(path)
+		dirSize, err := getDirSize(path, config.All)
 		if err != nil {
 			return "", err
 		}
 
-		return formatsize.FormatSize(size, human)
+		size = dirSize
+	} else {
+		size = entry.Size()
 	}
 
-	return formatsize.FormatSize(entry.Size(), human)
+	return formatsize.FormatSize(size, config.Human)
 }
