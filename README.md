@@ -12,6 +12,8 @@ $ make build
 
 # example: make run ARGS="-a ./testfolder"
 $ make run ARGS="{PASS_FLAGS_AND_PATH}"
+
+$ make test
 ```
 
 ### Flags

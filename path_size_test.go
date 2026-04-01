@@ -93,3 +93,31 @@ func TestHidden(t *testing.T) {
 
 	require.Equal(t, want, result)
 }
+
+func TestRecursive(t *testing.T) {
+	fixturePath := "./testdata"
+
+	fixtureFilepaths := []string{
+		"./testdata/file.txt",
+		"./testdata/fileEmpty.txt",
+		"./testdata/testFolder/file1.txt",
+		"./testdata/testFolder/file2.txt",
+		"./testdata/testFolder/testFolderInnerVisible/file3.txt",
+	}
+	var fixtureAggrSize int64
+
+	for _, filepath := range fixtureFilepaths {
+		entry, err := os.Lstat(filepath)
+		require.NoError(t, err)
+
+		fixtureAggrSize += entry.Size()
+	}
+
+	want, err := FormatSize(fixtureAggrSize, false)
+	require.NoError(t, err)
+
+	result, err := GetPathSize(fixturePath, true, byteConfig.Human, false)
+	require.NoError(t, err)
+
+	require.Equal(t, want, result)
+}
