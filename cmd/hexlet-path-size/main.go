@@ -24,9 +24,17 @@ var allFlag = &cli.BoolFlag{
 	Aliases: []string{"a"},
 }
 
+var recursiveFlag = &cli.BoolFlag{
+	Name:    "recursive",
+	Value:   false,
+	Usage:   "recursive size of directories",
+	Aliases: []string{"r"},
+}
+
 var cmdFlags = []cli.Flag{
 	humanFlag,
 	allFlag,
+	recursiveFlag,
 }
 
 func main() {
@@ -42,8 +50,9 @@ func main() {
 			}
 
 			config := pathsize.Config{
-				Human: cmd.Bool(humanFlag.Name),
-				All:   cmd.Bool(allFlag.Name),
+				Human:     cmd.Bool(humanFlag.Name),
+				All:       cmd.Bool(allFlag.Name),
+				Recursive: cmd.Bool(recursiveFlag.Name),
 			}
 
 			size, err := pathsize.GetPathSize(path, config)

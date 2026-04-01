@@ -4,19 +4,21 @@ import (
 	"code/formatsize"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 type Config struct {
-	Human bool
-	All   bool
+	Human     bool
+	All       bool
+	Recursive bool
 }
 
 func isHidden(name string) bool {
 	return strings.HasPrefix(name, ".")
 }
 
-func getDirSize(path string, all bool) (int64, error) {
+func getDirSize(path string, all, recursive bool) (int64, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return 0, err
@@ -29,12 +31,24 @@ func getDirSize(path string, all bool) (int64, error) {
 			return 0, err
 		}
 
-		if !all && isHidden(entry.Name()) {
+		entryName := entryInfo.Name()
+
+		if !all && isHidden(entryName) {
 			continue
 		}
 
-		// TODO: implement recursive check
-		if !entryInfo.IsDir() {
+		if entryInfo.IsDir() {
+			if !recursive {
+				continue
+			}
+
+			dirSize, err := getDirSize(filepath.Join(path, entryName), all, recursive)
+			if err != nil {
+				return 0, err
+			}
+
+			size += dirSize
+		} else {
 			size += entryInfo.Size()
 		}
 	}
@@ -55,7 +69,7 @@ func GetPathSize(path string, config Config) (string, error) {
 	var size int64
 
 	if entry.IsDir() {
-		dirSize, err := getDirSize(path, config.All)
+		dirSize, err := getDirSize(path, config.All, config.Recursive)
 		if err != nil {
 			return "", err
 		}

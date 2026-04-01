@@ -78,11 +78,11 @@ func TestHidden(t *testing.T) {
 	want, err := formatsize.FormatSize(entry.Size(), false)
 	require.NoError(t, err)
 
-	// Checking file is not seen without --all flag
+	// Checking file is not tracked without --all flag
 	_, err = GetPathSize(fixturePath, byteConfig)
 	require.Error(t, err)
 
-	// Checking file with --all flag
+	// Checking file is tracked with --all flag
 	result, err := GetPathSize(fixturePath, Config{
 		Human: true,
 		All:   true,
