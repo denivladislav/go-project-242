@@ -5,7 +5,17 @@
 ```bash
 $ make build
 
-$ make run ARGS="{YOUR_PATH_TO_FILE_OR_DIR}"
+$ make run ARGS="{PATH_TO_FILE_OR_DIR}"
+```
+
+### Flags
+```
+-H (--human)  #human-readable sizes (auto-select unit)
+
+–a (--all)  #include hidden files and directories
+
+-r (--recursive)  #recursive size of directories
+```
 
 ### Demo
 [![asciicast](https://asciinema.org/a/cjCIKIAZRNAco6X6.svg)](https://asciinema.org/a/cjCIKIAZRNAco6X6)
