@@ -70,7 +70,7 @@ func TestFolder(t *testing.T) {
 }
 
 func TestHidden(t *testing.T) {
-	fixturePath := "../testData/testFolder/.testFolderInner/.hiddenFile.txt"
+	fixturePath := "../testData/testFolder/.testFolderInnerHidden/.fileHidden.txt"
 
 	entry, err := os.Lstat(fixturePath)
 	require.NoError(t, err)
