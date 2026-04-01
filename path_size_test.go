@@ -19,9 +19,9 @@ func TestUnreachablePath(t *testing.T) {
 
 	result, err := GetPathSize(
 		unreachablePath,
+		byteConfig.Recursive,
 		byteConfig.Human,
 		byteConfig.All,
-		byteConfig.Recursive,
 	)
 
 	const msg = `GetPathSize should return "" and err for unreachable path`
@@ -35,7 +35,7 @@ func TestEmptyFile(t *testing.T) {
 	want, err := FormatSize(0, false)
 	require.NoError(t, err)
 
-	result, err := GetPathSize(fixturePath, byteConfig.Human, byteConfig.All, byteConfig.Recursive)
+	result, err := GetPathSize(fixturePath, byteConfig.Recursive, byteConfig.Human, byteConfig.All)
 	require.NoError(t, err)
 
 	require.Equal(t, want, result)
@@ -50,7 +50,7 @@ func TestFile(t *testing.T) {
 	want, err := FormatSize(entry.Size(), false)
 	require.NoError(t, err)
 
-	result, err := GetPathSize(fixturePath, byteConfig.Human, byteConfig.All, byteConfig.Recursive)
+	result, err := GetPathSize(fixturePath, byteConfig.Recursive, byteConfig.Human, byteConfig.All)
 
 	require.NoError(t, err)
 	require.Equal(t, want, result)
@@ -68,7 +68,7 @@ func TestFolder(t *testing.T) {
 	want, err := FormatSize(entry1.Size()+entry2.Size(), false)
 	require.NoError(t, err)
 
-	result, err := GetPathSize(fixturePath, byteConfig.Human, byteConfig.All, byteConfig.Recursive)
+	result, err := GetPathSize(fixturePath, byteConfig.Recursive, byteConfig.Human, byteConfig.All)
 	require.NoError(t, err)
 
 	require.Equal(t, want, result)
@@ -84,11 +84,11 @@ func TestHidden(t *testing.T) {
 	require.NoError(t, err)
 
 	// Checking file is not tracked without --all flag
-	_, err = GetPathSize(fixturePath, byteConfig.Human, byteConfig.All, byteConfig.Recursive)
+	_, err = GetPathSize(fixturePath, byteConfig.Recursive, byteConfig.Human, byteConfig.All)
 	require.Error(t, err)
 
 	// Checking file is tracked with --all flag
-	result, err := GetPathSize(fixturePath, byteConfig.Human, true, byteConfig.Recursive)
+	result, err := GetPathSize(fixturePath, byteConfig.Recursive, byteConfig.Human, true)
 	require.NoError(t, err)
 
 	require.Equal(t, want, result)

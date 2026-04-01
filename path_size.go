@@ -55,7 +55,7 @@ func getDirSize(path string, all, recursive bool) (int64, error) {
 	return size, nil
 }
 
-func GetPathSize(path string, human, all, recursive bool) (string, error) {
+func GetPathSize(path string, recursive, human, all bool) (string, error) {
 	entry, err := os.Lstat(path)
 	if err != nil {
 		return "", err

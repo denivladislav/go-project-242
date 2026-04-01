@@ -56,7 +56,7 @@ func main() {
 			}
 
 			// Wanted to pass the whole config. Obliged to pass flags separately
-			size, err := code.GetPathSize(path, config.Human, config.All, config.Recursive)
+			size, err := code.GetPathSize(path, config.Recursive, config.Human, config.All)
 			if err != nil {
 				return fmt.Errorf("error: %w", err)
 			}
