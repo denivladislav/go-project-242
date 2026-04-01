@@ -55,20 +55,20 @@ func getDirSize(path string, all, recursive bool) (int64, error) {
 	return size, nil
 }
 
-func GetPathSize(path string, config Config) (string, error) {
+func GetPathSize(path string, human, all, recursive bool) (string, error) {
 	entry, err := os.Lstat(path)
 	if err != nil {
 		return "", err
 	}
 
-	if !config.All && isHidden(entry.Name()) {
+	if !all && isHidden(entry.Name()) {
 		return "", fmt.Errorf("no visible file or dir with path %s", path)
 	}
 
 	var size int64
 
 	if entry.IsDir() {
-		dirSize, err := getDirSize(path, config.All, config.Recursive)
+		dirSize, err := getDirSize(path, all, recursive)
 		if err != nil {
 			return "", err
 		}
@@ -78,5 +78,5 @@ func GetPathSize(path string, config Config) (string, error) {
 		size = entry.Size()
 	}
 
-	return FormatSize(size, config.Human)
+	return FormatSize(size, human)
 }

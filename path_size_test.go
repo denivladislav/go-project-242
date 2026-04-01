@@ -9,14 +9,20 @@ import (
 )
 
 var byteConfig = Config{
-	Human: false,
-	All:   false,
+	Human:     false,
+	All:       false,
+	Recursive: false,
 }
 
 func TestUnreachablePath(t *testing.T) {
 	unreachablePath := "./unreachable"
 
-	result, err := GetPathSize(unreachablePath, byteConfig)
+	result, err := GetPathSize(
+		unreachablePath,
+		byteConfig.Human,
+		byteConfig.All,
+		byteConfig.Recursive,
+	)
 
 	const msg = `GetPathSize should return "" and err for unreachable path`
 	require.Error(t, err, msg)
@@ -29,7 +35,7 @@ func TestEmptyFile(t *testing.T) {
 	want, err := FormatSize(0, false)
 	require.NoError(t, err)
 
-	result, err := GetPathSize(fixturePath, byteConfig)
+	result, err := GetPathSize(fixturePath, byteConfig.Human, byteConfig.All, byteConfig.Recursive)
 	require.NoError(t, err)
 
 	require.Equal(t, want, result)
@@ -44,7 +50,7 @@ func TestFile(t *testing.T) {
 	want, err := FormatSize(entry.Size(), false)
 	require.NoError(t, err)
 
-	result, err := GetPathSize(fixturePath, byteConfig)
+	result, err := GetPathSize(fixturePath, byteConfig.Human, byteConfig.All, byteConfig.Recursive)
 
 	require.NoError(t, err)
 	require.Equal(t, want, result)
@@ -62,7 +68,7 @@ func TestFolder(t *testing.T) {
 	want, err := FormatSize(entry1.Size()+entry2.Size(), false)
 	require.NoError(t, err)
 
-	result, err := GetPathSize(fixturePath, byteConfig)
+	result, err := GetPathSize(fixturePath, byteConfig.Human, byteConfig.All, byteConfig.Recursive)
 	require.NoError(t, err)
 
 	require.Equal(t, want, result)
@@ -78,14 +84,11 @@ func TestHidden(t *testing.T) {
 	require.NoError(t, err)
 
 	// Checking file is not tracked without --all flag
-	_, err = GetPathSize(fixturePath, byteConfig)
+	_, err = GetPathSize(fixturePath, byteConfig.Human, byteConfig.All, byteConfig.Recursive)
 	require.Error(t, err)
 
 	// Checking file is tracked with --all flag
-	result, err := GetPathSize(fixturePath, Config{
-		Human: true,
-		All:   true,
-	})
+	result, err := GetPathSize(fixturePath, byteConfig.Human, true, byteConfig.Recursive)
 	require.NoError(t, err)
 
 	require.Equal(t, want, result)
