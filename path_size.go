@@ -1,7 +1,6 @@
-package pathsize
+package code
 
 import (
-	"code/formatsize"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -79,5 +78,5 @@ func GetPathSize(path string, config Config) (string, error) {
 		size = entry.Size()
 	}
 
-	return formatsize.FormatSize(size, config.Human)
+	return FormatSize(size, config.Human)
 }

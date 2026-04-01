@@ -1,7 +1,6 @@
-package pathsize
+package code
 
 import (
-	"code/formatsize"
 	"os"
 	"path/filepath"
 	"testing"
@@ -25,9 +24,9 @@ func TestUnreachablePath(t *testing.T) {
 }
 
 func TestEmptyFile(t *testing.T) {
-	fixturePath := "../testdata/fileEmpty.txt"
+	fixturePath := "./testdata/fileEmpty.txt"
 
-	want, err := formatsize.FormatSize(0, false)
+	want, err := FormatSize(0, false)
 	require.NoError(t, err)
 
 	result, err := GetPathSize(fixturePath, byteConfig)
@@ -37,12 +36,12 @@ func TestEmptyFile(t *testing.T) {
 }
 
 func TestFile(t *testing.T) {
-	fixturePath := "../testdata/file.txt"
+	fixturePath := "./testdata/file.txt"
 
 	entry, err := os.Lstat(fixturePath)
 	require.NoError(t, err)
 
-	want, err := formatsize.FormatSize(entry.Size(), false)
+	want, err := FormatSize(entry.Size(), false)
 	require.NoError(t, err)
 
 	result, err := GetPathSize(fixturePath, byteConfig)
@@ -52,7 +51,7 @@ func TestFile(t *testing.T) {
 }
 
 func TestFolder(t *testing.T) {
-	fixturePath := "../testData/testFolder"
+	fixturePath := "./testdata/testFolder"
 
 	entry1, err := os.Lstat(filepath.Join(fixturePath, "file1.txt"))
 	require.NoError(t, err)
@@ -60,7 +59,7 @@ func TestFolder(t *testing.T) {
 	entry2, err := os.Lstat(filepath.Join(fixturePath, "file2.txt"))
 	require.NoError(t, err)
 
-	want, err := formatsize.FormatSize(entry1.Size()+entry2.Size(), false)
+	want, err := FormatSize(entry1.Size()+entry2.Size(), false)
 	require.NoError(t, err)
 
 	result, err := GetPathSize(fixturePath, byteConfig)
@@ -70,12 +69,12 @@ func TestFolder(t *testing.T) {
 }
 
 func TestHidden(t *testing.T) {
-	fixturePath := "../testData/testFolder/.testFolderInnerHidden/.fileHidden.txt"
+	fixturePath := "./testdata/testFolder/.testFolderInnerHidden/.fileHidden.txt"
 
 	entry, err := os.Lstat(fixturePath)
 	require.NoError(t, err)
 
-	want, err := formatsize.FormatSize(entry.Size(), false)
+	want, err := FormatSize(entry.Size(), false)
 	require.NoError(t, err)
 
 	// Checking file is not tracked without --all flag

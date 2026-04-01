@@ -1,4 +1,4 @@
-package formatsize
+package code
 
 import (
 	"math"

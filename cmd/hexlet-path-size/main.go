@@ -1,7 +1,7 @@
 package main
 
 import (
-	"code/pathsize"
+	"code"
 	"context"
 	"fmt"
 	"log"
@@ -49,13 +49,13 @@ func main() {
 				return fmt.Errorf("error: path is required")
 			}
 
-			config := pathsize.Config{
+			config := code.Config{
 				Human:     cmd.Bool(humanFlag.Name),
 				All:       cmd.Bool(allFlag.Name),
 				Recursive: cmd.Bool(recursiveFlag.Name),
 			}
 
-			size, err := pathsize.GetPathSize(path, config)
+			size, err := code.GetPathSize(path, config)
 			if err != nil {
 				return fmt.Errorf("error: %w", err)
 			}
