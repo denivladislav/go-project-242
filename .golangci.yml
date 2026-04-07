@@ -22,5 +22,8 @@ linters:
 formatters:
   enable:
     - goimports
-    - gofumpt
     - golines
+  settings:
+    goimports:
+      local-prefixes:
+        - code

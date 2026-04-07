@@ -1,4 +1,4 @@
-package code
+package format
 
 import (
 	"math"

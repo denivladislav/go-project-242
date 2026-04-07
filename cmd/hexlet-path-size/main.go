@@ -1,13 +1,14 @@
 package main
 
 import (
-	"code"
 	"context"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/urfave/cli/v3"
+
+	"code"
 )
 
 var humanFlag = &cli.BoolFlag{
@@ -49,7 +50,7 @@ func main() {
 				return fmt.Errorf("error: path is required")
 			}
 
-			config := code.Config{
+			config := code.PathSizeOptions{
 				Human:     cmd.Bool(humanFlag.Name),
 				All:       cmd.Bool(allFlag.Name),
 				Recursive: cmd.Bool(recursiveFlag.Name),

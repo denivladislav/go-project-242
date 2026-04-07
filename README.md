@@ -1,26 +1,38 @@
 # Pathsize
-Utility that calculates the size of a file or directory
+CLI-utility that calculates the size of a file or a directory.  
+Supports recursive traversal, hidden files, and human-readable output.
 
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/denivladislav/go-project-242/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/denivladislav/go-project-242/actions)
 ### CI
 [![Actions Status](https://github.com/denivladislav/go-project-242/actions/workflows/CI.yml/badge.svg)](https://github.com/denivladislav/go-project-242/actions)
 
+### Requirements
+Go 1.26+
+
 ### How to use
+
 ```bash
-$ make build
+# Install
+make build
 
-# example: make run ARGS="-a ./testfolder"
-$ make run ARGS="{PASS_FLAGS_AND_PATH}"
+# Single file
+bin/hexlet-path-size ./testdata/file.txt
 
-$ make test
+# Folder, with flags
+bin/hexlet-path-size -a -r ./testdata
 ```
+
+See [Flags](#flags) and [Demo](#demo) for details.
+
+### Development
+See [Makefile](./Makefile) for tests, lint, etc.
 
 ### Flags
 ``` bash
 -H (--human) #human-readable sizes (auto-select unit)
 
-–a (--all)  #include hidden files and directories
+-a (--all)  #include hidden files and directories
 
 -r (--recursive)  #recursive size of directories
 ```

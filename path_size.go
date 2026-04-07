@@ -5,19 +5,25 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"code/internal/format"
 )
 
-type Config struct {
-	Human     bool
+type dirSizeOptions struct {
+	all       bool
+	recursive bool
+}
+type PathSizeOptions struct {
 	All       bool
 	Recursive bool
+	Human     bool
 }
 
 func isHidden(name string) bool {
 	return strings.HasPrefix(name, ".")
 }
 
-func getDirSize(path string, all, recursive bool) (int64, error) {
+func getDirSize(path string, options dirSizeOptions) (int64, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return 0, err
@@ -32,24 +38,27 @@ func getDirSize(path string, all, recursive bool) (int64, error) {
 
 		entryName := entryInfo.Name()
 
-		if !all && isHidden(entryName) {
+		if !options.all && isHidden(entryName) {
 			continue
 		}
 
-		if entryInfo.IsDir() {
-			if !recursive {
-				continue
-			}
-
-			dirSize, err := getDirSize(filepath.Join(path, entryName), all, recursive)
-			if err != nil {
-				return 0, err
-			}
-
-			size += dirSize
-		} else {
+		// isFile
+		if !entryInfo.IsDir() {
 			size += entryInfo.Size()
+			continue
 		}
+
+		if !options.recursive {
+			continue
+		}
+
+		newFilepath := filepath.Join(path, entryName)
+		dirSize, err := getDirSize(newFilepath, options)
+		if err != nil {
+			return 0, err
+		}
+
+		size += dirSize
 	}
 
 	return size, nil
@@ -67,16 +76,22 @@ func GetPathSize(path string, recursive, human, all bool) (string, error) {
 
 	var size int64
 
-	if entry.IsDir() {
-		dirSize, err := getDirSize(path, all, recursive)
-		if err != nil {
-			return "", err
-		}
-
-		size = dirSize
-	} else {
+	// isFile
+	if !entry.IsDir() {
 		size = entry.Size()
+		return format.FormatSize(size, human)
 	}
 
-	return FormatSize(size, human)
+	dirSizeOptions := dirSizeOptions{
+		all:       all,
+		recursive: recursive,
+	}
+	dirSize, err := getDirSize(path, dirSizeOptions)
+	if err != nil {
+		return "", err
+	}
+
+	size = dirSize
+
+	return format.FormatSize(size, human)
 }
