@@ -5,16 +5,33 @@ on:
 
 jobs:
   build:
-
+    name: build
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v6
-      
       - name: build
         run: |
           make build
-      
-      - name: tests
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.11
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - name: test
         run: |
           make test

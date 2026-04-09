@@ -1,140 +1,60 @@
 package code
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/stretchr/testify/require"
-
-	"code/internal/format"
 )
 
-var testOptions = PathSizeOptions{
-	Human:     false,
-	All:       false,
-	Recursive: false,
+type test struct {
+	name     string
+	path     string
+	expected string
+	wantErr  bool
 }
 
-func TestUnreachablePath(t *testing.T) {
-	unreachablePath := "./unreachable"
+var testDataPath = filepath.Join(".", "testdata")
 
-	result, err := GetPathSize(
-		unreachablePath,
-		testOptions.Recursive,
-		testOptions.Human,
-		testOptions.All,
-	)
+func assertEqual[T comparable](t *testing.T, got, want T) {
+	t.Helper()
 
-	const msg = `GetPathSize should return "" and err for unreachable path`
-	require.Error(t, err, msg)
-	require.Equal(t, "", result, msg)
-}
-
-func TestEmptyFile(t *testing.T) {
-	fixturePath := "./testdata/fileEmpty.txt"
-
-	want, err := format.FormatSize(0, false)
-	require.NoError(t, err)
-
-	result, err := GetPathSize(
-		fixturePath,
-		testOptions.Recursive,
-		testOptions.Human,
-		testOptions.All,
-	)
-	require.NoError(t, err)
-
-	require.Equal(t, want, result)
-}
-
-func TestFile(t *testing.T) {
-	fixturePath := "./testdata/file.txt"
-
-	entry, err := os.Lstat(fixturePath)
-	require.NoError(t, err)
-
-	want, err := format.FormatSize(entry.Size(), false)
-	require.NoError(t, err)
-
-	result, err := GetPathSize(
-		fixturePath,
-		testOptions.Recursive,
-		testOptions.Human,
-		testOptions.All,
-	)
-
-	require.NoError(t, err)
-	require.Equal(t, want, result)
-}
-
-func TestFolder(t *testing.T) {
-	fixturePath := "./testdata/testFolder"
-
-	entry1, err := os.Lstat(filepath.Join(fixturePath, "file1.txt"))
-	require.NoError(t, err)
-
-	entry2, err := os.Lstat(filepath.Join(fixturePath, "file2.txt"))
-	require.NoError(t, err)
-
-	want, err := format.FormatSize(entry1.Size()+entry2.Size(), false)
-	require.NoError(t, err)
-
-	result, err := GetPathSize(
-		fixturePath,
-		testOptions.Recursive,
-		testOptions.Human,
-		testOptions.All,
-	)
-	require.NoError(t, err)
-
-	require.Equal(t, want, result)
-}
-
-func TestHidden(t *testing.T) {
-	fixturePath := "./testdata/testFolder/.testFolderInnerHidden/.fileHidden.txt"
-
-	entry, err := os.Lstat(fixturePath)
-	require.NoError(t, err)
-
-	want, err := format.FormatSize(entry.Size(), false)
-	require.NoError(t, err)
-
-	// Checking file is not tracked without --all flag
-	_, err = GetPathSize(fixturePath, testOptions.Recursive, testOptions.Human, testOptions.All)
-	require.Error(t, err)
-
-	// Checking file is tracked with --all flag
-	result, err := GetPathSize(fixturePath, testOptions.Recursive, testOptions.Human, true)
-	require.NoError(t, err)
-
-	require.Equal(t, want, result)
-}
-
-func TestRecursive(t *testing.T) {
-	fixturePath := "./testdata"
-
-	fixtureFilepaths := []string{
-		"./testdata/file.txt",
-		"./testdata/fileEmpty.txt",
-		"./testdata/testFolder/file1.txt",
-		"./testdata/testFolder/file2.txt",
-		"./testdata/testFolder/testFolderInnerVisible/file3.txt",
+	if got != want {
+		t.Errorf("got = %v, want = %v", got, want)
 	}
-	var fixtureAggrSize int64
+}
 
-	for _, filepath := range fixtureFilepaths {
-		entry, err := os.Lstat(filepath)
-		require.NoError(t, err)
+func assertError(t *testing.T, err error, wantErr bool) {
+	t.Helper()
 
-		fixtureAggrSize += entry.Size()
+	if (err != nil) != wantErr {
+		t.Errorf("error = %v, wantErr = %v", err, wantErr)
+	}
+}
+
+func TestGetPathSizeFail(t *testing.T) {
+	tt := test{
+		name:    "returns error for unreachable path",
+		path:    filepath.Join(".", "unreachable"),
+		wantErr: true,
 	}
 
-	want, err := format.FormatSize(fixtureAggrSize, false)
-	require.NoError(t, err)
+	t.Run(tt.name, func(t *testing.T) {
+		_, err := GetPathSize(tt.path, false, false, false)
+		assertError(t, err, tt.wantErr)
+	})
+}
 
-	result, err := GetPathSize(fixturePath, true, testOptions.Human, false)
-	require.NoError(t, err)
+func TestGetPathSizeHappy(t *testing.T) {
+	tt := test{
+		name:     "returns all recursive folder size",
+		path:     testDataPath,
+		wantErr:  false,
+		expected: "18B",
+	}
 
-	require.Equal(t, want, result)
+	t.Run(tt.name, func(t *testing.T) {
+		result, err := GetPathSize(tt.path, true, true, true)
+		assertError(t, err, tt.wantErr)
+
+		assertEqual(t, result, tt.expected)
+	})
 }

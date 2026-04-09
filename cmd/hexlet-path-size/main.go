@@ -8,7 +8,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 
-	"code"
+	pathsize "code"
 )
 
 var humanFlag = &cli.BoolFlag{
@@ -50,19 +50,18 @@ func main() {
 				return fmt.Errorf("error: path is required")
 			}
 
-			config := code.PathSizeOptions{
-				Human:     cmd.Bool(humanFlag.Name),
-				All:       cmd.Bool(allFlag.Name),
-				Recursive: cmd.Bool(recursiveFlag.Name),
-			}
-
-			// Wanted to pass the whole config. Obliged to pass flags separately
-			size, err := code.GetPathSize(path, config.Recursive, config.Human, config.All)
+			size, err := pathsize.GetPathSize(
+				path,
+				cmd.Bool(recursiveFlag.Name),
+				cmd.Bool(humanFlag.Name),
+				cmd.Bool(allFlag.Name),
+			)
 			if err != nil {
 				return fmt.Errorf("error: %w", err)
 			}
 
 			fmt.Printf("%s\t%s\n", size, path)
+
 			return nil
 		},
 	}

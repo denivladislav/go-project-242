@@ -3,93 +3,119 @@ package format
 import (
 	"math"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
-type TestCase struct {
-	desc     string
+type test struct {
+	name     string
 	size     int64
 	human    bool
 	expected string
+	wantErr  bool
+}
+
+func assertEqual[T comparable](t *testing.T, got, want T) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("got = %v, want = %v", got, want)
+	}
+}
+
+func assertError(t *testing.T, err error, wantErr bool) {
+	t.Helper()
+
+	if (err != nil) != wantErr {
+		t.Errorf("error = %v, wantErr = %v", err, wantErr)
+	}
 }
 
 func TestNegativeSize(t *testing.T) {
-	testCase := TestCase{
-		desc:  "negative",
-		size:  -100,
-		human: false,
+	tt := test{
+		name:     "returns error for negative size",
+		size:     -100,
+		human:    false,
+		expected: "",
+		wantErr:  true,
 	}
 
-	result, err := FormatSize(testCase.size, testCase.human)
-	require.Error(t, err)
-	require.Equal(t, "", result)
+	t.Run(tt.name, func(t *testing.T) {
+		_, err := FormatSize(tt.size, tt.human)
+		assertError(t, err, tt.wantErr)
+	})
 }
 
 func TestByteFormat(t *testing.T) {
-	testCase := TestCase{
-		desc:     "bytes",
-		size:     100,
+	tt := test{
+		name:     "returns bytes for size",
+		size:     10000,
 		human:    false,
-		expected: "100B",
+		expected: "10000B",
+		wantErr:  false,
 	}
 
-	result, err := FormatSize(testCase.size, testCase.human)
-	require.NoError(t, err)
-
-	require.Equal(t, testCase.expected, result)
+	t.Run(tt.name, func(t *testing.T) {
+		result, err := FormatSize(tt.size, tt.human)
+		assertError(t, err, tt.wantErr)
+		assertEqual(t, result, tt.expected)
+	})
 }
 
 func TestHumanFormat(t *testing.T) {
-	testCases := []TestCase{
+	tests := []test{
 		{
-			desc:     "bytes",
+			name:     "returns bytes for size < 1024B",
 			size:     100,
 			human:    true,
 			expected: "100B",
 		},
 		{
-			desc:     "1 KB",
+			name:     "returns 1.0KB for 1024B",
 			size:     1024,
 			human:    true,
 			expected: "1.0KB",
 		},
 		{
-			desc:     "1 KB with small overlap",
+			name:     "returns 1.0KB for 1KB + 1B",
 			size:     1024 + 1,
 			human:    true,
 			expected: "1.0KB",
 		},
 		{
-			desc:     "1 KB with bigger overlap",
+			name:     "returns 1.1KB for 1KB + 100B",
 			size:     1024 + 100,
 			human:    true,
 			expected: "1.1KB",
 		},
 		{
-			desc:     "MB",
+			name:     "returns 2.4MB for 2MB + 400KB",
 			size:     int64(math.Pow(2, 20))*2 + 1024*400,
 			human:    true,
 			expected: "2.4MB",
 		},
 		{
-			desc:     "EB",
+			name:     "returns 1.0EB for 2^60B",
 			size:     int64(math.Pow(2, 60)),
 			human:    true,
 			expected: "1.0EB",
 		},
 		{
-			desc:     "EB with overlap",
-			size:     int64(math.Pow(2, 60) + math.Pow(2, 57)),
+			name:     "returns 1.1EB for 1EB + 100PB",
+			size:     int64(math.Pow(2, 60) + math.Pow(2, 50)*100),
 			human:    true,
 			expected: "1.1EB",
 		},
 	}
 
-	for _, testCase := range testCases {
-		result, err := FormatSize(testCase.size, testCase.human)
-		require.NoError(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := FormatSize(tt.size, tt.human)
+			assertError(t, err, tt.wantErr)
 
-		require.Equal(t, testCase.expected, result)
+			if tt.wantErr {
+				return
+			}
+
+			assertEqual(t, result, tt.expected)
+		})
 	}
 }
