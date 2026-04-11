@@ -19,18 +19,18 @@ func isHidden(name string) bool {
 func calcDirSize(path string, options Options) (int64, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to read dir '%s': %w", path, err)
 	}
 
 	var size int64
 
 	for _, entry := range entries {
+		entryName := entry.Name()
+
 		entryInfo, err := entry.Info()
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("failed to get entry info for '%s': %w", entryName, err)
 		}
-
-		entryName := entryInfo.Name()
 
 		if !options.All && isHidden(entryName) {
 			continue
@@ -49,7 +49,7 @@ func calcDirSize(path string, options Options) (int64, error) {
 
 		dirSize, err := calcDirSize(newFilepath, options)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("calcDirSize failed: %w", err)
 		}
 
 		size += dirSize
@@ -61,11 +61,11 @@ func calcDirSize(path string, options Options) (int64, error) {
 func CalcSize(path string, options Options) (int64, error) {
 	entry, err := os.Lstat(path)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to read '%s': %w", path, err)
 	}
 
 	if !options.All && isHidden(entry.Name()) {
-		return 0, fmt.Errorf("no visible file or dir with path %s", path)
+		return 0, fmt.Errorf("no visible file or dir for '%s'", path)
 	}
 
 	if !entry.IsDir() {
@@ -74,7 +74,7 @@ func CalcSize(path string, options Options) (int64, error) {
 
 	dirSize, err := calcDirSize(path, options)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("calcDirSize failed: %w", err)
 	}
 
 	return dirSize, nil

@@ -31,7 +31,7 @@ func assertError(t *testing.T, err error, wantErr bool) {
 
 func TestNegativeSize(t *testing.T) {
 	tt := test{
-		name:     "returns error for negative size",
+		name:     "negative size",
 		size:     -100,
 		human:    false,
 		expected: "",
@@ -46,7 +46,7 @@ func TestNegativeSize(t *testing.T) {
 
 func TestByteFormat(t *testing.T) {
 	tt := test{
-		name:     "returns bytes for size",
+		name:     "simple bytes",
 		size:     10000,
 		human:    false,
 		expected: "10000B",
@@ -63,43 +63,43 @@ func TestByteFormat(t *testing.T) {
 func TestHumanFormat(t *testing.T) {
 	tests := []test{
 		{
-			name:     "returns bytes for size < 1024B",
+			name:     "simple bytes",
 			size:     100,
 			human:    true,
 			expected: "100B",
 		},
 		{
-			name:     "returns 1.0KB for 1024B",
+			name:     "1024B",
 			size:     1024,
 			human:    true,
 			expected: "1.0KB",
 		},
 		{
-			name:     "returns 1.0KB for 1KB + 1B",
+			name:     "1KB + 1B",
 			size:     1024 + 1,
 			human:    true,
 			expected: "1.0KB",
 		},
 		{
-			name:     "returns 1.1KB for 1KB + 100B",
+			name:     "1KB + 100B",
 			size:     1024 + 100,
 			human:    true,
 			expected: "1.1KB",
 		},
 		{
-			name:     "returns 2.4MB for 2MB + 400KB",
+			name:     "2MB + 400KB",
 			size:     int64(math.Pow(2, 20))*2 + 1024*400,
 			human:    true,
 			expected: "2.4MB",
 		},
 		{
-			name:     "returns 1.0EB for 2^60B",
+			name:     "2^60B",
 			size:     int64(math.Pow(2, 60)),
 			human:    true,
 			expected: "1.0EB",
 		},
 		{
-			name:     "returns 1.1EB for 1EB + 100PB",
+			name:     "1EB + 100PB",
 			size:     int64(math.Pow(2, 60) + math.Pow(2, 50)*100),
 			human:    true,
 			expected: "1.1EB",

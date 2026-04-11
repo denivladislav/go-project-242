@@ -8,20 +8,16 @@ const denominator = 1024
 
 var units = []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
 
-func convertSize(size int64) (float64, string) {
-	curr := float64(size)
+func normalizeSize(size int64) (float64, string) {
+	value := float64(size)
+	index := 0
 
-	for _, unit := range units[:len(units)-1] {
-		new := curr / denominator
-
-		if new < 1 {
-			return curr, unit
-		}
-
-		curr = new
+	for value >= denominator && index < len(units)-1 {
+		value = value / denominator
+		index += 1
 	}
 
-	return curr, units[len(units)-1]
+	return value, units[index]
 }
 
 func formatByte(size int64) string {
@@ -41,11 +37,11 @@ func FormatSize(size int64, human bool) (string, error) {
 		return formatByte(size), nil
 	}
 
-	convertedSize, unit := convertSize(size)
+	normalizedSize, unit := normalizeSize(size)
 
 	if unit == units[0] {
 		return formatByte(size), nil
 	}
 
-	return formatHuman(convertedSize, unit), nil
+	return formatHuman(normalizedSize, unit), nil
 }

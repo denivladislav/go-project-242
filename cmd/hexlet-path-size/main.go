@@ -47,7 +47,7 @@ func main() {
 			path := cmd.Args().Get(0)
 
 			if path == "" {
-				return fmt.Errorf("error: path is required")
+				return fmt.Errorf("path is required")
 			}
 
 			size, err := pathsize.GetPathSize(
@@ -57,7 +57,7 @@ func main() {
 				cmd.Bool(allFlag.Name),
 			)
 			if err != nil {
-				return fmt.Errorf("error: %w", err)
+				return fmt.Errorf("GetPathSize failed: %w", err)
 			}
 
 			fmt.Printf("%s\t%s\n", size, path)

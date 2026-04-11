@@ -6,7 +6,6 @@ import (
 )
 
 type test struct {
-	name     string
 	path     string
 	options  Options
 	expected int64
@@ -40,33 +39,29 @@ var testDataPath = filepath.Join("..", "..", "testdata")
 
 func TestUnreachablePath(t *testing.T) {
 	tt := test{
-		name:    "returns error for unreachable path",
 		path:    filepath.Join(".", "unreachable"),
 		wantErr: true,
 	}
 
-	t.Run(tt.name, func(t *testing.T) {
+	t.Run("unreachable path", func(t *testing.T) {
 		_, err := CalcSize(tt.path, tt.options)
 		assertError(t, err, tt.wantErr)
 	})
 }
 
 func TestSize(t *testing.T) {
-	tests := []test{
-		{
-			name:     "returns 0 for empty file",
+	tests := map[string]test{
+		"empty file": {
 			path:     filepath.Join(testDataPath, "sizeEmpty.txt"),
 			wantErr:  false,
 			expected: actualSizes["emptyFile"],
 		},
-		{
-			name:     "returns non-recursive folder size",
+		"non-recursive folder": {
 			path:     testDataPath,
 			wantErr:  false,
 			expected: actualSizes["testDataFolder"],
 		},
-		{
-			name: "returns recursive folder size",
+		"recursive folder": {
 			path: testDataPath,
 			options: Options{
 				Recursive: true,
@@ -74,8 +69,7 @@ func TestSize(t *testing.T) {
 			wantErr:  false,
 			expected: actualSizes["testDataFolderRecursive"],
 		},
-		{
-			name: "returns recursive + hidden folder size",
+		"recursive + hidden folder": {
 			path: testDataPath,
 			options: Options{
 				Recursive: true,
@@ -86,8 +80,8 @@ func TestSize(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			result, err := CalcSize(tt.path, tt.options)
 			assertError(t, err, tt.wantErr)
 
