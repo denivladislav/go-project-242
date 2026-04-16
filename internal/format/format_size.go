@@ -10,14 +10,18 @@ var units = []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
 
 func normalizeSize(size int64) (float64, string) {
 	value := float64(size)
-	index := 0
+	unit := units[0]
 
-	for value >= denominator && index < len(units)-1 {
-		value = value / denominator
-		index += 1
+	for _, nextUnit := range units[1:] {
+		if value < denominator {
+			break
+		}
+
+		value /= denominator
+		unit = nextUnit
 	}
 
-	return value, units[index]
+	return value, unit
 }
 
 func formatByte(size int64) string {
