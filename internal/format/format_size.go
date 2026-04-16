@@ -1,6 +1,7 @@
 package format
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -32,9 +33,11 @@ func formatHuman(size float64, unit string) string {
 	return fmt.Sprintf("%.1f%s", size, unit)
 }
 
+var ErrNegativeSize = errors.New("size cannot be < 0")
+
 func FormatSize(size int64, human bool) (string, error) {
 	if size < 0 {
-		return "", fmt.Errorf("size cannot be < 0")
+		return "", ErrNegativeSize
 	}
 
 	if !human {

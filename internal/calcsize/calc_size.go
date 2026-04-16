@@ -16,10 +16,18 @@ func isHidden(name string) bool {
 	return strings.HasPrefix(name, ".")
 }
 
+type ErrNoVisibleEntry struct {
+	path string
+}
+
+func (e ErrNoVisibleEntry) Error() string {
+	return fmt.Sprintf("no visible file or dir for '%s'", e.path)
+}
+
 func calcDirSize(path string, options Options) (int64, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		return 0, fmt.Errorf("failed to read dir '%s': %w", path, err)
+		return 0, fmt.Errorf("os read dir failed: %w", err)
 	}
 
 	var size int64
@@ -29,7 +37,7 @@ func calcDirSize(path string, options Options) (int64, error) {
 
 		entryInfo, err := entry.Info()
 		if err != nil {
-			return 0, fmt.Errorf("failed to get entry info for '%s': %w", entryName, err)
+			return 0, fmt.Errorf("entry info failed: %w", err)
 		}
 
 		if !options.All && isHidden(entryName) {
@@ -49,7 +57,7 @@ func calcDirSize(path string, options Options) (int64, error) {
 
 		dirSize, err := calcDirSize(newFilepath, options)
 		if err != nil {
-			return 0, fmt.Errorf("calcDirSize failed: %w", err)
+			return 0, fmt.Errorf("calc dir size failed: %w", err)
 		}
 
 		size += dirSize
@@ -61,11 +69,11 @@ func calcDirSize(path string, options Options) (int64, error) {
 func CalcSize(path string, options Options) (int64, error) {
 	entry, err := os.Lstat(path)
 	if err != nil {
-		return 0, fmt.Errorf("failed to read '%s': %w", path, err)
+		return 0, fmt.Errorf("os lstat failed: %w", err)
 	}
 
 	if !options.All && isHidden(entry.Name()) {
-		return 0, fmt.Errorf("no visible file or dir for '%s'", path)
+		return 0, ErrNoVisibleEntry{path}
 	}
 
 	if !entry.IsDir() {
@@ -74,7 +82,7 @@ func CalcSize(path string, options Options) (int64, error) {
 
 	dirSize, err := calcDirSize(path, options)
 	if err != nil {
-		return 0, fmt.Errorf("calcDirSize failed: %w", err)
+		return 0, fmt.Errorf("calc dir size failed: %w", err)
 	}
 
 	return dirSize, nil

@@ -15,7 +15,7 @@ func GetPathSize(path string, recursive, human, all bool) (string, error) {
 
 	size, err := calcsize.CalcSize(path, sizeOptions)
 	if err != nil {
-		return "", fmt.Errorf("CalcSize failed: %w", err)
+		return "", fmt.Errorf("calc size failed: %w", err)
 	}
 
 	return format.FormatSize(size, human)

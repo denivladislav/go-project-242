@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -38,6 +39,8 @@ var cmdFlags = []cli.Flag{
 	recursiveFlag,
 }
 
+var ErrRequiredPath = errors.New("path is required")
+
 func main() {
 	cmd := &cli.Command{
 		Name:  "hexlet-path-size",
@@ -47,7 +50,7 @@ func main() {
 			path := cmd.Args().Get(0)
 
 			if path == "" {
-				return fmt.Errorf("path is required")
+				return ErrRequiredPath
 			}
 
 			size, err := pathsize.GetPathSize(
@@ -57,7 +60,7 @@ func main() {
 				cmd.Bool(allFlag.Name),
 			)
 			if err != nil {
-				return fmt.Errorf("GetPathSize failed: %w", err)
+				return fmt.Errorf("get path size failed: %w", err)
 			}
 
 			fmt.Printf("%s\t%s\n", size, path)

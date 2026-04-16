@@ -1,17 +1,19 @@
 package format
 
 import (
-	"math"
+	"errors"
 	"testing"
 )
 
-type test struct {
-	name     string
-	size     int64
-	human    bool
-	expected string
-	wantErr  bool
-}
+const (
+	_  = iota
+	KB = 1 << (10 * iota)
+	MB
+	GB
+	TB
+	PB
+	EB
+)
 
 func assertEqual[T comparable](t *testing.T, got, want T) {
 	t.Helper()
@@ -29,91 +31,104 @@ func assertError(t *testing.T, err error, wantErr bool) {
 	}
 }
 
+func validateError(t *testing.T, err error, checkErr func(err error) bool) {
+	t.Helper()
+
+	if !checkErr(err) {
+		t.Errorf("error check failed for error: %v", err)
+	}
+}
+
 func TestNegativeSize(t *testing.T) {
+	type test struct {
+		name     string
+		size     int64
+		checkErr func(err error) bool
+	}
+
 	tt := test{
-		name:     "negative size",
-		size:     -100,
-		human:    false,
-		expected: "",
-		wantErr:  true,
+		name: "causes error for negative size",
+		size: -MB,
+		checkErr: func(err error) bool {
+			return errors.Is(err, ErrNegativeSize)
+		},
 	}
 
 	t.Run(tt.name, func(t *testing.T) {
-		_, err := FormatSize(tt.size, tt.human)
-		assertError(t, err, tt.wantErr)
+		_, err := FormatSize(tt.size, false)
+		validateError(t, err, tt.checkErr)
 	})
 }
 
 func TestByteFormat(t *testing.T) {
+	type test struct {
+		name     string
+		size     int64
+		expected string
+	}
+
 	tt := test{
-		name:     "simple bytes",
-		size:     10000,
-		human:    false,
-		expected: "10000B",
-		wantErr:  false,
+		name:     "keeps bytes for any byte size",
+		size:     10 * KB,
+		expected: "10240B",
 	}
 
 	t.Run(tt.name, func(t *testing.T) {
-		result, err := FormatSize(tt.size, tt.human)
-		assertError(t, err, tt.wantErr)
+		result, err := FormatSize(tt.size, false)
+		assertError(t, err, false)
 		assertEqual(t, result, tt.expected)
 	})
 }
 
 func TestHumanFormat(t *testing.T) {
+	type test struct {
+		name     string
+		size     int64
+		expected string
+	}
+
 	tests := []test{
 		{
-			name:     "simple bytes",
+			name:     "keeps bytes for small size",
 			size:     100,
-			human:    true,
 			expected: "100B",
 		},
 		{
-			name:     "1024B",
+			name:     "rounds 1024B to 1.0KB",
 			size:     1024,
-			human:    true,
 			expected: "1.0KB",
 		},
 		{
-			name:     "1KB + 1B",
-			size:     1024 + 1,
-			human:    true,
+			name:     "rounds 1KB + 1B to 1.0KB",
+			size:     KB + 1,
 			expected: "1.0KB",
 		},
 		{
-			name:     "1KB + 100B",
-			size:     1024 + 100,
-			human:    true,
+			name:     "normalizes 1KB + 100B to 1.1KB",
+			size:     KB + 100,
 			expected: "1.1KB",
 		},
 		{
-			name:     "2MB + 400KB",
-			size:     int64(math.Pow(2, 20))*2 + 1024*400,
-			human:    true,
+			name:     "normalizes 2MB + 400KB to 2.4MB",
+			size:     2*MB + 400*KB,
 			expected: "2.4MB",
 		},
 		{
-			name:     "2^60B",
-			size:     int64(math.Pow(2, 60)),
-			human:    true,
+			name:     "rounds 1024PB to 1.0EB",
+			size:     1024 * PB,
 			expected: "1.0EB",
 		},
 		{
-			name:     "1EB + 100PB",
-			size:     int64(math.Pow(2, 60) + math.Pow(2, 50)*100),
-			human:    true,
+			name:     "normalizes 1EB + 100PB to 1.1EB",
+			size:     EB + 100*PB,
 			expected: "1.1EB",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := FormatSize(tt.size, tt.human)
-			assertError(t, err, tt.wantErr)
-
-			if tt.wantErr {
-				return
-			}
+			result, err := FormatSize(tt.size, true)
+			assertError(t, err, false)
 
 			assertEqual(t, result, tt.expected)
 		})
