@@ -4,9 +4,6 @@ build:
 run:
 	bin/hexlet-path-size $(ARGS)
 
-lint-install:
-	curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v2.11.2
-
 lint:
 	golangci-lint run -c .golangci.yml $(ARGS)
 
