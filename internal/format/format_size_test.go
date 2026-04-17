@@ -40,44 +40,18 @@ func validateError(t *testing.T, err error, checkErr func(err error) bool) {
 }
 
 func TestNegativeSize(t *testing.T) {
-	type test struct {
-		name     string
-		size     int64
-		checkErr func(err error) bool
+	checkErr := func(err error) bool {
+		return errors.Is(err, ErrNegativeSize)
 	}
 
-	tt := test{
-		name: "causes error for negative size",
-		size: -MB,
-		checkErr: func(err error) bool {
-			return errors.Is(err, ErrNegativeSize)
-		},
-	}
-
-	t.Run(tt.name, func(t *testing.T) {
-		_, err := FormatSize(tt.size, false)
-		validateError(t, err, tt.checkErr)
-	})
+	_, err := FormatSize(-MB, false)
+	validateError(t, err, checkErr)
 }
 
 func TestByteFormat(t *testing.T) {
-	type test struct {
-		name     string
-		size     int64
-		expected string
-	}
-
-	tt := test{
-		name:     "keeps bytes for any byte size",
-		size:     10 * KB,
-		expected: "10240B",
-	}
-
-	t.Run(tt.name, func(t *testing.T) {
-		result, err := FormatSize(tt.size, false)
-		assertError(t, err, false)
-		assertEqual(t, result, tt.expected)
-	})
+	result, err := FormatSize(10*KB, false)
+	assertError(t, err, false)
+	assertEqual(t, result, "10240B")
 }
 
 func TestHumanFormat(t *testing.T) {

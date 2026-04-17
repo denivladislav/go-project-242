@@ -7,13 +7,6 @@ import (
 	"testing"
 )
 
-var actualSizes = map[string]int64{
-	"emptyFile":                  0,
-	"testDataFolder":             3,
-	"testDataFolderRecursive":    11,
-	"testDataFolderRecursiveAll": 18,
-}
-
 func assertEqual[T comparable](t *testing.T, got, want T) {
 	t.Helper()
 
@@ -40,46 +33,36 @@ func validateError(t *testing.T, err error, checkErr func(err error) bool) {
 
 var testDataPath = filepath.Join("..", "..", "testdata")
 
-func TestUnreachablePath(t *testing.T) {
+func TestCalcSizeErrors(t *testing.T) {
 	type test struct {
 		path     string
 		checkErr func(err error) bool
 	}
 
-	tt := test{
-		path: filepath.Join(".", "unreachable"),
-		checkErr: func(err error) bool {
-			return errors.Is(err, os.ErrNotExist)
+	tests := map[string]test{
+		"unreachable path causes error": {
+			path: filepath.Join(".", "unreachable"),
+			checkErr: func(err error) bool {
+				return errors.Is(err, os.ErrNotExist)
+			},
+		},
+		"no visible entry causes error": {
+			path: filepath.Join(testDataPath, "nested", ".innerHidden"),
+			checkErr: func(err error) bool {
+				return errors.Is(err, ErrNoVisibleEntry)
+			},
 		},
 	}
 
-	t.Run("unreachable path causes error", func(t *testing.T) {
-		_, err := CalcSize(tt.path, Options{})
-		validateError(t, err, tt.checkErr)
-	})
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			_, err := CalcSize(tt.path, Options{})
+			validateError(t, err, tt.checkErr)
+		})
+	}
 }
 
-func TestNoVisibleEntry(t *testing.T) {
-	type test struct {
-		path     string
-		checkErr func(err error) bool
-	}
-
-	tt := test{
-		path: filepath.Join(testDataPath, "nested", ".innerHidden"),
-		checkErr: func(err error) bool {
-			var errNoVisibleEntry ErrNoVisibleEntry
-			return errors.As(err, &errNoVisibleEntry)
-		},
-	}
-
-	t.Run("no visible entry causes error", func(t *testing.T) {
-		_, err := CalcSize(tt.path, Options{})
-		validateError(t, err, tt.checkErr)
-	})
-}
-
-func TestSize(t *testing.T) {
+func TestCalcSize(t *testing.T) {
 	type test struct {
 		path     string
 		options  Options
@@ -89,18 +72,18 @@ func TestSize(t *testing.T) {
 	tests := map[string]test{
 		"calcs empty file size as 0B": {
 			path:     filepath.Join(testDataPath, "sizeEmpty.txt"),
-			expected: actualSizes["emptyFile"],
+			expected: 0,
 		},
 		"calcs non-recursive folder size": {
 			path:     testDataPath,
-			expected: actualSizes["testDataFolder"],
+			expected: 3,
 		},
 		"calcs recursive folder size": {
 			path: testDataPath,
 			options: Options{
 				Recursive: true,
 			},
-			expected: actualSizes["testDataFolderRecursive"],
+			expected: 11,
 		},
 		"calcs recursive + hidden folder size": {
 			path: testDataPath,
@@ -108,7 +91,7 @@ func TestSize(t *testing.T) {
 				Recursive: true,
 				All:       true,
 			},
-			expected: actualSizes["testDataFolderRecursiveAll"],
+			expected: 18,
 		},
 	}
 

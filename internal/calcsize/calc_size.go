@@ -1,6 +1,7 @@
 package calcsize
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,13 +17,7 @@ func isHidden(name string) bool {
 	return strings.HasPrefix(name, ".")
 }
 
-type ErrNoVisibleEntry struct {
-	path string
-}
-
-func (e ErrNoVisibleEntry) Error() string {
-	return fmt.Sprintf("no visible file or dir for '%s'", e.path)
-}
+var ErrNoVisibleEntry = errors.New("no visible file or dir")
 
 func calcDirSize(path string, options Options) (int64, error) {
 	entries, err := os.ReadDir(path)
@@ -73,7 +68,7 @@ func CalcSize(path string, options Options) (int64, error) {
 	}
 
 	if !options.All && isHidden(entry.Name()) {
-		return 0, ErrNoVisibleEntry{path}
+		return 0, fmt.Errorf("calc size failed for path '%s': %w", path, ErrNoVisibleEntry)
 	}
 
 	if !entry.IsDir() {
